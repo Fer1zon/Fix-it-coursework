@@ -1,81 +1,34 @@
 @extends('layouts.app')
 @section('content')
-    <div class="m-0 p-4 shadow col-10 border rounded-end">
-        <div class="row align-items-center">
-            <div class="col-md-8 text-start">
-                <p class="fs-2">
-                    Достижения начинаются<br>
-                    здесь!<br>
-                    Вдохновляйся спортом,<br>
-                    достигай цели<br>
-                    Подготовься к победе с нами!<br>
-                </p>
-            </div>
-            <div class="col-md-4 text-center">
-                <img src="assets/img/protein.png" class="img-fluid" alt="Protein">
-            </div>
+
+    <div class = "container-fluid vh-100 d-flex justify-content-center align-items-center">
+        <img class = "w-100 h-100 rounded-4" src = "assets/img/baner.jpg">
+        <div class="position-absolute top-50 start-50 translate-middle text-white text-center">
+            <h1 style = "font-family: 'Fira-Sans-Condensed-Black'; font-weight: lighter; font-size: 48px">FIX-IT - Команда которая берет все заботы по дому на себя</h1>
+            <p class="lead" style = "font-family: 'Fira-Sans-Condensed-Black'; font-weight: lighter; font-size: 36px">Будем у вас уже через 30 минут!</p>
         </div>
     </div>
 
-    <div class="container my-5">
-        <div id="carouselExampleIndicators" class="carousel slide mx-auto" style="max-width: 600px;">
-            <div class="carousel-indicators">
-                @foreach($advantages as $a)
+    <div class="container d-flex justify-content-center mt-4">
+        <h1 style="font-family: 'Fira-Sans-Condensed-Black'; font-size: 64px">Мы занимаемся ремонтом</h1>
+    </div>
+    <div class="container">
+        <div class="row g-3">
+            @foreach($services as $service)
 
-                    @if($loop->index==0)
-                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{$loop->index}}" class="active"></button>
-                    @else
-                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="{{$loop->index}}"></button>
-                    @endif
+                <div class="col-12 col-md-6">
+                    <a href = "{{route('catalog')}}" class="nav-link">
+                    <div class="d-flex justify-content-around p-3 align-items-center rounded-3" style="background-color: rgb(217, 217, 217)">
+                        <img class="col-1" src="{{$service['img']}}">
+                        <p class="col-8 mb-0" style="font-family: 'Fira-Sans-Condensed-Black'; font-weight: lighter; font-size: 32px">{{$service['title']}}</p>
+                    </div>
+                    </a>
+                </div>
 
-
-
-                @endforeach
-
-            </div>
-
-            <div class="carousel-inner">
-                @foreach($advantages as $advantage)
-                    @if($loop->index == 0)
-
-                        <div class="carousel-item active">
-
-                            <div class="card pt-5 mx-auto" style="min-height: 400px; width: 100%;">
-                                <img src="{{$advantage['img']}}" class="card-img-top w-25 mx-auto" alt="...">
-                                <div class="card-body d-flex flex-column justify-content-center">
-                                    <h4 class="card-title text-center fs-1">{{$advantage['title']}}</h4>
-                                    <p class="text-center mb-0 fs-4">{{$advantage['description']}}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                    @else
-                        <div class="carousel-item">
-
-                            <div class="card pt-5 mx-auto" style="min-height: 400px; width: 100%;">
-                                <img src="{{$advantage['img']}}" class="card-img-top w-25 mx-auto" alt="...">
-                                <div class="card-body d-flex flex-column justify-content-center">
-                                    <h4 class="card-title text-center fs-1">{{$advantage['title']}}</h4>
-                                    <p class="text-center mb-0 fs-4">{{$advantage['description']}}</p>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
-
-                @endforeach
+            @endforeach
 
 
 
-            </div>
-
-
-            <!-- Кнопки управления -->
-            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
-                <span class="carousel-control-prev-icon bg-dark rounded-circle" aria-hidden="true"></span>
-            </button>
-            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
-                <span class="carousel-control-next-icon bg-dark rounded-circle" aria-hidden="true"></span>
-            </button>
         </div>
     </div>
 

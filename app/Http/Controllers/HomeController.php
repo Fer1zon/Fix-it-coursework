@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class HomeController extends Controller
@@ -24,162 +25,214 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $advantages = [
+        $services = [
             [
-                'title' => 'Скорость доставки',
-                'description' => 'Наши склады расположены по всей России. Что гарантирует быструю доставку',
-                'img' => 'assets/img/icons/ben.svg'
+                'title' => 'Сантехники',
+                'img' => 'assets/img/icons/water-pipe.png'
             ],
             [
-                'title' => 'Безопастность сырья',
-                'description' => 'Все из чего мы производим свою продукцию проходит тщательную экспертизу и обследования',
-                'img' => 'assets/img/icons/Микроскоп.png'
+                'title' => 'Электрики',
+                'img' => 'assets/img/icons/thunder.png'
             ],
             [
-                'title' => 'Скидка 25%',
-                "description" => 'Собери корзину от 3000р а мы подарим тебе скидку на первый заказ',
-                'img' => 'assets/img/icons/coins.png'
-            ]
+                'title' => 'Мебели',
+                'img' => 'assets/img/icons/table.png'
+            ],
+            [
+                'title' => 'Кухонь',
+                'img' => 'assets/img/icons/kitchen-table.png'
+            ],
+            [
+                'title' => 'Ванн',
+                'img' => 'assets/img/icons/shower.png'
+            ],
+            [
+                'title' => 'Техники',
+                'img' => 'assets/img/icons/gears.png'
+            ],
         ];
-        return view('index', compact('advantages'));
-    }
-    public function catalog(Request $request)
-    {
-
-        $products_query = DB::table("products");
-        if ($request->has("categories"))
-        {
-            $products_query->whereIn("category_id", $request->categories);
-        }
-        if ($request->has("sort_price"))
-        {
-            $direction = $request->sort_price === 'desc' ? 'desc' : 'asc';
-            $products_query->orderBy("price",$direction);
-        }
-        if ($request->has("search"))
-        {
-            $products_query->where("name","ILIKE","%".$request->search."%");
-        }
-        $products =$products_query->paginate(9);
-        $categories = DB::table('category')->get();
-
-        return view('catalog', compact('products', 'categories'));
+        return view('index', compact('services'));
     }
 
-    public function add_to_cart(Request $request, $id)
+    public function catalog()
     {
-        $cart = session()->get('cart');
-        if(isset($cart[$id]))
-        {
-            $cart[$id]["quantity"] += 1;
-        }
-        else
-        {
-            $product_data = DB::table("products")->where("id", $id)->first();
-            $cart[$id] = ["quantity" => 1, "name" => $product_data->name, "description" => $product_data->description, "img" => $product_data->img, "max_quantity" => $product_data->quantity, "price" => $product_data->price, "in_order" => true];
+
+        $categories = DB::table('categories')->get();
+        $services = [];
+
+        foreach ($categories as $category) {
+            $services_temp = DB::table("services")
+                ->where('category_id', $category->id)
+                ->whereExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('service_master_relationship')
+                        ->whereColumn('service_master_relationship.service_id', 'services.id');
+                })
+                ->select(
+                    'services.*',
+                    DB::raw('(
+            SELECT MIN(price)
+            FROM service_master_relationship
+            WHERE service_master_relationship.service_id = services.id
+        ) as min_price')
+                )
+                ->get();
+            $services[$category->id] = $services_temp;
         }
 
-        session()->put('cart', $cart);
-        return back();
+        return view('catalog', compact('categories', "services"));
     }
 
-    public function remove_from_cart(Request $request, $id)
+    public function service_masters($service_id)
     {
-        $cart = session()->get('cart');
-        if(isset($cart[$id]))
-        {
-            if($cart[$id]["quantity"] - 1 <= 0)
-            {
-                unset($cart[$id]);
-            }
-
-            else
-            {
-                $cart[$id]["quantity"] -= 1;
-            }
-            session()->put('cart', $cart);
-        }
-        return back();
-
+        $masters = DB::table('service_master_relationship')
+            ->join('masters', 'service_master_relationship.master_id', '=', 'masters.id')
+            ->leftJoin('reviews', 'masters.id', '=', 'reviews.master_id')
+            ->where('service_master_relationship.service_id', $service_id)
+            ->select(
+                'masters.*',
+                'service_master_relationship.price',
+                DB::raw('COALESCE(ROUND(AVG(reviews.value), 1), 0) as rating'),
+            )
+            ->groupBy(
+                'masters.id',
+                'masters.name',
+                'masters.img',
+                'service_master_relationship.price'
+            )
+            ->get();
+        return view("masters", compact('masters', 'service_id'));
     }
 
-    public function cart()
+    public function call_master_page($service_id, $master_id)
     {
-        $cart = session()->get('cart', []);
-        return view('cart', compact('cart'));
+        return view('call_master', compact('service_id', 'master_id'));
     }
 
-    public function create_order_c(Request $request)
+    public function create_call_master(Request $request)
     {
+
         $request->validate([
+            'phone' => 'required|min:10|max:12',
             'address' => 'required|min:10|max:255',
+            'preferred_time' => 'required',
+            'date' => 'required',
         ], [
-            'address.required' => 'Пожалуйста, укажите адрес доставки.',
-            'address.min' => 'Адрес слишком короткий, укажите город и улицу.',
-            "address.max" => 'Адресс слишком велик, не передавайте лишнюю информацию'
-        ]);
+                'phone.required' => 'Пожалуйста, укажите контактный номер.',
+                'phone.min' => 'Пожалуйста, укажите корректный контактный номер.',
+                'phone.max' => 'Пожалуйста, укажите корректный контактный номер.',
 
-        $cart = session()->get('cart', []);
-        if (empty($cart)) {
-            return back()->with('error', 'Ваша корзина пуста!');
-        }
+                'address.required' => 'Пожалуйста, укажите адрес на который прибудет специалист.',
+                'address.min' => 'Указанный адрес слишком короткий.',
+                'address.max' => 'Указанный адрес слишком длинный.',
 
-        $total_price = 0;
-        $change_count = false;
-        foreach ($cart as $id => $product)
-        {
-            $currency_count = DB::table('products')->where("id", $id)->first();
-            if ($currency_count->quantity < $product["quantity"]){
-                $change_count = true;
-                $cart[$id]["quantity"] = $currency_count->quantity;
-                $cart[$id]["max_quantity"] = $currency_count->quantity;
-            }
-            $total_price += $product["price"] * $product["quantity"];
+                'preferred_time.required' => 'Пожалуйста, укажите время когда вам будет удобно что бы подъехал специалист.',
+                'date.required' => 'Пожалуйста, укажите дату в которую вам будет удобно принять специалиста.'
 
-        }
-        if($change_count){
-            session()->put('cart', $cart);
-            return back()->with("error", "Количество товаров в каталоге изменилось и мы уменьшили их количество!");
-        }
+            ]
+        );
+        DB::table('calls_master')->insert(['user_id' => $request->user()->id, 'service_id' => $request->service_id, 'master_id' => $request->master_id, 'phone' => $request->phone, 'address' => $request->address, 'preferred_time' => $request->preferred_time, 'date' => $request->date, 'comment' => $request->comment]);
 
+        return redirect(route('index'));
 
-        $order_id = DB::table("orders")->insertGetId(["user_id" => $request->user()->id, "total_price" => $total_price, "address" => $request->address]);
-        foreach ($cart as $id => $product)
-        {
-            DB::table("products")->where("id", $id)->decrement("quantity", $product["quantity"]);
-            DB::table("order_component")->insert(["order_id"=>$order_id, "product_name" => $product["name"], "quantity" => $product["quantity"]]);
-        }
-        session()->forget('cart');
-        return back();
     }
 
-
-    public function orders(Request $request)
+    public function profile()
     {
-        $orders = DB::table('orders')
-            ->where('user_id', $request->user()->id)
-            ->join("statuses", "orders.status_id", "=", "statuses.id")
-            ->orderBy('create_at', 'desc')
-            ->select('orders.*', 'statuses.name as status_name')
+        $user = DB::table('users')->where('id', Auth::user()->id)->first();
+        $calls_master = DB::table('calls_master')->orderBy('created_at', 'desc')->where('user_id', Auth::user()->id)
+            ->join('masters', 'calls_master.master_id', '=', 'masters.id')
+            ->join('services', 'calls_master.service_id', '=', 'services.id')
+            ->join('call_status', 'calls_master.status_id', '=', 'call_status.id')
+            ->select(
+                'calls_master.*',
+                'masters.name as master_name',
+                'services.title as service_title',
+                'services.id as service_id',
+                'call_status.name as status_name',
+                'call_status.id as status_id',
+            )
             ->get();
 
-        $orderIds = $orders->pluck('id');
-
-        // 3. Получаем все товары для этих заказов одним запросом
-        $products = DB::table('order_component') // замените на имя вашей таблицы со связью
-        ->whereIn('order_id', $orderIds)
-            ->get()
-            ->groupBy('order_id'); // Группируем товары по ID заказа
-
-        // 4. Приклеиваем товары к заказам (имитируем связь Eloquent для Blade)
-        foreach ($orders as $order) {
-            $order->products = $products->get($order->id) ?? [];
+        foreach ($calls_master as $call_master) {
+            if ($call_master->status_id == 5) {
+                $call_master->opportunity_review = false;
+                continue;
+            }
+            if ($call_master->status_id != 4) {
+                $call_master->opportunity_review = false;
+                continue;
+            }
+            $review_existence = DB::table('reviews')->where('master_id', $call_master->master_id)->where('user_id', Auth::user()->id)->first();
+            if ($review_existence) {
+                $call_master->opportunity_review = false;
+                continue;
+            }
+            $call_master->opportunity_review = true;
         }
-        return view('orders', compact('orders'));
+        return view('profile', compact('user', 'calls_master'));
+    }
+
+    public function decline_call_master(Request $request)
+    {
+        DB::table('calls_master')->where('id', $request->call_id)->update(['status_id' => 5]);
+        return back();
+    }
+
+    public function send_review_page($service_id, $master_id, Request $request)
+    {
+
+        return view('write_review', compact('master_id', 'service_id'));
+
+    }
+
+    public function send_review(Request $request)
+    {
+        $request->validate([
+            'rating' => 'required|min:1|max:5',
+            'message' => 'required',
+        ]);
+
+        DB::table('reviews')->insert(['master_id' => $request->master_id, 'user_id' => $request->user()->id, 'comment' => $request->message, 'value' => $request->rating]);
+        return redirect(route('profile'));
+    }
+
+    public function master_page($master_id)
+    {
+        $master_data = DB::table('masters')->where('masters.id', $master_id)
+            ->leftJoin('reviews', 'masters.id', '=', 'reviews.master_id')
+            ->select(
+                'masters.*',
+                DB::raw('COALESCE(ROUND(AVG(reviews.value), 1), 0) as rating')
+            )
+            ->groupBy(
+                'masters.id',
+                'masters.name',
+                'masters.img',
+            )
+            ->first();
+
+        $services = DB::table('service_master_relationship')->where('master_id', $master_id)
+            ->join("services", "service_master_relationship.service_id", "=", "services.id")
+            ->select(
+                'services.title as service_title',
+                'services.id as service_id'
+            )->get();
+
+        $reviews = DB::table('reviews')->where('master_id', $master_id)
+            ->join('users', 'users.id', '=', 'reviews.user_id')
+            ->select(
+                "reviews.comment as review_comment",
+                "reviews.value as review_value",
+                "users.name as user_name",
+                "users.img as user_img",
+            )->get();
+        return view('master', compact('master_data', 'services', 'reviews'));
+    }
+
+    public function our_us_page()
+    {
+        return view('our_us');
     }
 
 }
-
-
-
-

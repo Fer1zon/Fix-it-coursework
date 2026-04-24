@@ -19,13 +19,13 @@ class IsAdminChecking
     {
         if (!isset($request->user()->id))
         {
-            return redirect('/login');
+            return redirect(route('login'));
         }
 
         $role_id = DB::table("users")->where("id", $request->user()->id)->pluck("role_id")->first();
         if ($role_id == 1)
         {
-            return redirect("/");
+            return redirect(route("index"));
         }
         return $next($request);
     }

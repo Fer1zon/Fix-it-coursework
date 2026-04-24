@@ -16,6 +16,7 @@
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 
+
     <!-- Styles -->
     <link href="{{ asset('assets/css/bootstrap.css') }}" rel="stylesheet">
     <link href = "{{asset('assets/css/main.css')}}" rel="stylesheet">
@@ -23,10 +24,10 @@
 <body>
 
 
-<header class = "mb-5">
+<header class = "mb-1">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
         <div class="container-fluid">
-            <a class="navbar-brand ms-4 fs-2" style = "font-family: 'Fira-Sans-Condensed-Black'" href="{{route("index")}}">PROFIT</a>
+            <a class="navbar-brand ms-4 fs-2" style = "font-family: 'Fira-Sans-Condensed-Black'" href="{{route("index")}}">FIX-IT</a>
             <nav class="navbar navbar-expand-lg bg-body-tertiary">
                 <div class="container-fluid">
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,24 +36,10 @@
                     <div class="collapse navbar-collapse" id="navbarNav">
                         <ul class="navbar-nav">
                             <li class="nav-item">
-                                <a class="nav-link active" aria-current="page" href="/">О нас</a>
+                                <a class="nav-link active" aria-current="page" href="{{route("our_us")}}">О нас</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="{{route("catalog")}}">Каталог</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="/location">Где нас найти?</a>
-                            </li>
-                            <li class="nav-item d-flex align-items-center ms-lg-3">
-                                <a href="{{ route('cart') }}" class="nav-link position-relative">
-                                    <img src="{{ asset('assets/img/icons/cart.png') }}" alt="cart" style="width: 24px;">
-
-                                    @if(session('cart') && count(session('cart')) > 0)
-                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
-                                            {{ count(session('cart')) }}
-                                        </span>
-                                    @endif
-                                </a>
+                                <a class="nav-link" href="{{route("catalog")}}">Наши услуги</a>
                             </li>
                         </ul>
                     </div>
@@ -73,6 +60,7 @@
                         <form class="container-fluid justify-content-start" action = "{{ route('logout') }}" method="POST">
                             @csrf
                             <button class="btn btn-outline-danger me-2" type="submit">Выход</button>
+                            <a href = "{{route('profile')}}"><button class = "btn btn-outline-success me-2" type="button">Профиль</button></a>
                         </form>
 
 
@@ -92,8 +80,11 @@
     @yield('content')
 </main>
 
-<footer>
+<footer class = "container-fluid d-flex justify-content-around w-75" style="border-top: #2b3035 solid; margin-top: 200px">
 
+    <a href = '{{route('index')}}' class = "nav-link"><p style="font-family: Fira-Sans-Condensed-Black; font-size: 16px">Главная</p></a>
+    <a href = '#' class = "nav-link"><p style="font-family: Fira-Sans-Condensed-Black; font-size: 16px">Услуги</p></a>
+    <a href = '#' class = "nav-link"><p style="font-family: Fira-Sans-Condensed-Black; font-size: 16px">О нас</p></a>
 </footer>
 </body>
 </html>
