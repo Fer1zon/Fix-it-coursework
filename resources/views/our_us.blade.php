@@ -63,8 +63,8 @@
                 <i class="bi bi-map-fill text-primary me-2"></i>Мы на карте
             </h4>
             <div class="ratio ratio-16x9">
-                <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A9b8dba34d70ac6beefebed317553eac0ec09cdb0935b8150cde759b4c9174997&amp;width=500&amp;height=400&amp;lang=ru_RU&amp;scroll=true"></script>
-            </div>
+                <script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A0ea73d8cfa3903b9c51f48f5928a0955b715893fddafb4899cc4c5ac622c8855&amp;width=448&amp;height=448&amp;lang=ru_RU&amp;scroll=true"></script>
+                            </div>
         </div>
     </div>
 

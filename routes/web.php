@@ -27,7 +27,7 @@ Route::get('/reviews/send/{service_id}/{master_id}', [App\Http\Controllers\HomeC
 Route::post('/reviews/send', [App\Http\Controllers\HomeController::class, 'send_review'])->name('send_review')->middleware('auth');
 Route::get("/our_us", [App\Http\Controllers\HomeController::class, 'our_us_page'])->name('our_us');
 
-Route::get("/master/{master_id}", [App\Http\Controllers\HomeController::class, 'master_page'])->name('master_page')->middleware("auth");
+Route::get("/master/{master_id}", [App\Http\Controllers\HomeController::class, 'master_page'])->name('master_page');
 
 Route::get("/admin", [App\Http\Controllers\AdminController::class, 'index'])->name('admin_index')->middleware("isAdmin");
 Route::get("/admin/masters", [App\Http\Controllers\AdminController::class, 'masters'])->name('masters_manage')->middleware("isAdmin");

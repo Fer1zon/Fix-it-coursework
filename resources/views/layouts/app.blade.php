@@ -62,11 +62,6 @@
                             <button class="btn btn-outline-danger me-2" type="submit">Выход</button>
                             <a href = "{{route('profile')}}"><button class = "btn btn-outline-success me-2" type="button">Профиль</button></a>
                         </form>
-
-
-
-
-
                    @endif
 
 
@@ -83,8 +78,8 @@
 <footer class = "container-fluid d-flex justify-content-around w-75" style="border-top: #2b3035 solid; margin-top: 200px">
 
     <a href = '{{route('index')}}' class = "nav-link"><p style="font-family: Fira-Sans-Condensed-Black; font-size: 16px">Главная</p></a>
-    <a href = '#' class = "nav-link"><p style="font-family: Fira-Sans-Condensed-Black; font-size: 16px">Услуги</p></a>
-    <a href = '#' class = "nav-link"><p style="font-family: Fira-Sans-Condensed-Black; font-size: 16px">О нас</p></a>
+    <a href = '{{route("catalog")}}' class = "nav-link"><p style="font-family: Fira-Sans-Condensed-Black; font-size: 16px">Услуги</p></a>
+    <a href = '{{route("our_us")}}' class = "nav-link"><p style="font-family: Fira-Sans-Condensed-Black; font-size: 16px">О нас</p></a>
 </footer>
 </body>
 </html>
